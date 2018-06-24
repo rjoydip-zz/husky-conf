@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint *.js",
     "pretest": "./node_modules/.bin/eslint --fix --ignore-path .gitignore .",
+    "prepush": "npm run lint",
     "precommit": "npm run lint"
   },
   "bin": {
@@ -52,6 +53,7 @@
   },
   "husky": {
     "hooks": {
+      "pre-push": "npm run prepush",
       "pre-commit": "npm run precommit"
     }
   }

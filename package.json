@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.1",
+    "common-tags": "^1.8.0",
     "dot-prop": "^4.2.0",
     "lodash": "^4.17.10",
     "meow": "^5.0.0",

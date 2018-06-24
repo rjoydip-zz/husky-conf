@@ -4,7 +4,7 @@
   "description": "Configure husky in your project.",
   "main": "index.js",
   "scripts": {
-    "lint": "./node_modules/.bin/eslint src/**/*.js",
+    "lint": "./node_modules/.bin/eslint *.js",
     "pretest": "./node_modules/.bin/eslint --fix --ignore-path .gitignore .",
     "precommit": "npm run lint"
   },

@@ -115,7 +115,7 @@ class HuskyConf {
   setup (input, values) {
     if (this.command.indexOf(input) > -1) {
       if (input === 'init') {
-        this.add()
+        this.init()
       } else if (input === 'remove') {
         this.remove()
       } else if (input === 'add') {

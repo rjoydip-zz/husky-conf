@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "./node_modules/.bin/eslint src/**/*.js",
-    "pretest": "./node_modules/.bin/eslint --fix --ignore-path .gitignore ."
+    "pretest": "./node_modules/.bin/eslint --fix --ignore-path .gitignore .",
+    "precommit": "npm lint"
   },
   "bin": {
     "husky-conf": "index.js"
@@ -48,5 +49,10 @@
     "update-notifier": "^2.5.0",
     "write-json-file": "^2.3.0",
     "write-pkg": "^3.2.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run precommit"
+    }
   }
 }

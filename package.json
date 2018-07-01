@@ -1,11 +1,10 @@
 {
   "name": "husky-conf",
-  "version": "1.0.0",
-  "description": "Configure husky in your project.",
+  "version": "1.1.0",
+  "description": "Configure husky for your project.",
   "main": "index.js",
   "scripts": {
     "lint": "./node_modules/.bin/eslint **/*.js",
-    "pretest": "./node_modules/.bin/eslint --fix --ignore-path .gitignore .",
     "prepush": "npm run lint",
     "precommit": "npm run lint"
   },

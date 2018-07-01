@@ -10,19 +10,24 @@ $ npm i -g husky-conf
 
 ## Usage
 
-```bash
- Configure husky in your project.
+```
+  Configure husky for your project.
 
-  Usage
-    $ husky-conf <input> ... <string>
+  Usage:
+    $ husky-conf <option>
 
-  Options
-      --init,           -i  Initialize husky
-      --add,            -a  Add husky hook (WIP)
-      --remove,         -r  Remove existing husky hook (WIP)
+  Options:
+      init    i  Initialize husky
+      add    a  Add husky hook
+      remove    r  Remove existing husky hook
+      version    v  Check version of husky-conf
 
-  Examples
+  Examples:
     $ husky-conf --help
+    $ husky-conf version
+    $ husky-conf init
+    $ husky-conf add commit-msg
+    $ husky-conf remove commit-msg
 ```
 
 ## Hooks

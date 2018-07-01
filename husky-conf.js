@@ -12,8 +12,9 @@ const log = console.log
 const cwd = process.cwd
 
 class HuskyConf {
-  constructor() {
-    this.command = ['init', 'add', 'remove']
+  constructor () {
+    this.command = ['init', 'add', 'remove', 'version']
+    this.alise = ['i', 'a', 'r', 'v']
     this.hooks = [
       'applypatch-msg',
       'commit-msg',
@@ -35,42 +36,47 @@ class HuskyConf {
       'update'
     ]
     this.cli = meow(`
-        Usage 
-          $ husky-conf <option>
+        ${chalk.yellow('Usage')}:
+          $ ${chalk.green('husky-conf <option>')}
 
-        Options
-            --${this.command[0]}       -i  Initialize husky
-            --${this.command[1]}       -a  Add husky hook
-            --${this.command[2]}       -r  Remove existing husky hook
+        ${chalk.yellow('Options')}:
+            ${this.command[0]}    ${this.command[0].charAt(0)}  Initialize husky
+            ${this.command[1]}    ${this.command[1].charAt(0)}  Add husky hook
+            ${this.command[2]}    ${this.command[2].charAt(0)}  Remove existing husky hook
+            ${this.command[3]}    ${this.command[3].charAt(0)}  Check version of husky-conf
 
-        Examples
+        ${chalk.yellow('Examples')}:
           $ husky-conf --help
+          $ husky-conf version
           $ husky-conf init 
           $ husky-conf add commit-msg
           $ husky-conf remove commit-msg
-          
     `, {
-        string: ['_'],
-        alias: {
-          i: 'init',
-          a: 'add',
-          r: 'remove'
+      string: ['_'],
+      alias: {
+        i: 'init',
+        a: 'add',
+        r: 'remove'
+      },
+      flags: {
+        init: {
+          type: 'array',
+          default: true
         },
-        flags: {
-          init: {
-            type: 'array',
-            default: true
-          },
-          add: {
-            type: 'array',
-            default: false
-          },
-          remove: {
-            type: 'array',
-            default: false
-          }
+        add: {
+          type: 'string',
+          default: false
+        },
+        remove: {
+          type: 'string',
+          default: false
+        },
+        version: {
+          type: 'string',
+          default: false
         }
-      })
+      }
+    })
 
     if (this.cli.input.length === 0) {
       log(chalk.red('Specify at least one path'))
@@ -83,15 +89,21 @@ class HuskyConf {
     this.updateNotify()
   }
 
-  updateNotify() {
+  updateNotify () {
     updateNotifier({ pkg: this.cli.pkg }).notify()
   }
 
-  removeDash(value) {
+  removeDash (value) {
     return value.replace(/-/g, '')
   }
 
-  add(value) {
+  async version () {
+    await readPkg(__dirname).then(pkg => {
+      log(`husky-conf ${chalk.green('v') + chalk.green(dotProp.get(pkg, 'version'))}`)
+    })
+  }
+
+  add (value) {
     if (this.hooks.indexOf(value) < 0) {
       log(chalk.red('Invalid hook'))
     } else {
@@ -110,7 +122,7 @@ class HuskyConf {
               dotProp.set(pkg, 'scripts', dotProp.has(pkg, 'scripts') ? merge(dotProp.get(pkg, 'scripts'), Object.assign({}, scriptObj)) : merge(Object.assign({
                 'test': 'echo \'Error: no test specified\' && exit 1'
               }, scriptObj))),
-              dotProp.set(pkg, 'husky.hooks', dotProp.has(pkg, 'husky') ? merge(dotProp.get(pkg, 'husky.hooks'), huskyObj) : huskyObj),
+              dotProp.set(pkg, 'husky.hooks', dotProp.has(pkg, 'husky') ? merge(dotProp.get(pkg, 'husky.hooks'), huskyObj) : huskyObj)
             ),
             '_id'
           )
@@ -125,7 +137,7 @@ class HuskyConf {
     }
   }
 
-  remove(value) {
+  remove (value) {
     if (this.hooks.indexOf(value) < 0) {
       log(chalk.red('Invalid hook'))
     } else {
@@ -149,7 +161,7 @@ class HuskyConf {
                   dotProp.get(pkg, 'scripts'),
                   this.removeDash(value)
                 )
-              ),
+              )
             ),
             '_id'
           )
@@ -162,7 +174,7 @@ class HuskyConf {
     }
   }
 
-  init() {
+  init () {
     readPkg(cwd()).then(pkg => {
       const huskyExists = dotProp.get(pkg, 'husky')
       if (huskyExists) {
@@ -174,9 +186,9 @@ class HuskyConf {
             { 'precommit': 'npm test' }
           )
         ) : {
-            'test': 'echo \'Error: no test specified\' && exit 1',
-            'precommit': 'npm test'
-          }
+          'test': 'echo \'Error: no test specified\' && exit 1',
+          'precommit': 'npm test'
+        }
 
         writePkg(
           path.join(cwd(), 'package.json'),
@@ -202,15 +214,16 @@ class HuskyConf {
     })
   }
 
-  setup(input, value) {
-    console.log(input, value)
-    if (this.command.indexOf(input) > -1) {
-      if (input === 'init') {
+  setup (input, value) {
+    if (this.command.indexOf(input) > -1 || this.alise.indexOf(input) > -1) {
+      if (input === 'init' || input === 'i') {
         this.init()
-      } else if (input === 'remove') {
+      } else if (input === 'remove' || input === 'r') {
         this.remove(value)
-      } else if (input === 'add') {
+      } else if (input === 'add' || input === 'a') {
         this.add(value)
+      } else if (input === 'version' || input === 'v') {
+        this.version()
       }
     } else {
       log(chalk.red('Command not valid'))

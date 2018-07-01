@@ -1,76 +1,79 @@
-"use strict"
-const path = require("path")
-const meow = require("meow")
-const { pullAt, merge, omit, find } = require("lodash")
-const chalk = require("chalk")
-const updateNotifier = require("update-notifier")
-const readPkg = require("read-pkg")
-const writePkg = require("write-pkg")
-const dotProp = require("dot-prop")
-const { oneLine } = require('common-tags')
+'use strict'
+const path = require('path')
+const meow = require('meow')
+const { pullAt, merge, omit } = require('lodash')
+const chalk = require('chalk')
+const updateNotifier = require('update-notifier')
+const readPkg = require('read-pkg')
+const writePkg = require('write-pkg')
+const dotProp = require('dot-prop')
 
 const log = console.log
 const cwd = process.cwd
 
 class HuskyConf {
   constructor() {
-    this.command = ["init", "add", "remove"]
+    this.command = ['init', 'add', 'remove']
     this.hooks = [
-      "applypatch-msg",
-      "commit-msg",
-      "post-applypatch",
-      "post-checkout",
-      "post-commit",
-      "post-merge",
-      "post-receive",
-      "post-rewrite",
-      "post-update",
-      "pre-applypatch",
-      "pre-auto-gc",
-      "pre-commit",
-      "pre-push",
-      "pre-rebase",
-      "pre-receive",
-      "prepare-commit-msg",
-      "push-to-checkout",
-      "update"
+      'applypatch-msg',
+      'commit-msg',
+      'post-applypatch',
+      'post-checkout',
+      'post-commit',
+      'post-merge',
+      'post-receive',
+      'post-rewrite',
+      'post-update',
+      'pre-applypatch',
+      'pre-auto-gc',
+      'pre-commit',
+      'pre-push',
+      'pre-rebase',
+      'pre-receive',
+      'prepare-commit-msg',
+      'push-to-checkout',
+      'update'
     ]
     this.cli = meow(`
         Usage 
-          $ husky-conf <input> ... <string>
+          $ husky-conf <option>
 
         Options
-            --${this.command[0]},       -i  Initialize husky
-            --${this.command[1]},       -a  Add husky hook
-            --${this.command[2]},       -r  Remove existing husky hook
+            --${this.command[0]}       -i  Initialize husky
+            --${this.command[1]}       -a  Add husky hook
+            --${this.command[2]}       -r  Remove existing husky hook
 
         Examples
           $ husky-conf --help
+          $ husky-conf init 
+          $ husky-conf add commit-msg
+          $ husky-conf remove commit-msg
+          
     `, {
-        string: ["_"],
+        string: ['_'],
         alias: {
-          i: "init",
-          a: "add",
-          r: "remove"
+          i: 'init',
+          a: 'add',
+          r: 'remove'
         },
         flags: {
           init: {
-            type: "array",
-            default: "init"
+            type: 'array',
+            default: true
           },
           add: {
-            type: "array",
+            type: 'array',
             default: false
           },
           remove: {
-            type: "array",
+            type: 'array',
             default: false
           }
         }
       })
 
     if (this.cli.input.length === 0) {
-      log(chalk.red("Specify at least one path"))
+      log(chalk.red('Specify at least one path'))
       process.exit(1)
     } else {
       const val = pullAt(this.cli.input, [0, 1])
@@ -90,112 +93,129 @@ class HuskyConf {
 
   add(value) {
     if (this.hooks.indexOf(value) < 0) {
-      log(chalk.red("Invalid hook"))
+      log(chalk.red('Invalid hook'))
     } else {
       readPkg(cwd()).then(pkg => {
-        console.log(
-          {
-            ...dotProp.get(pkg, "husky.hooks"),
-            ...oneLine`{
-              "${value}": "npm run ${this.removeDash(value)}"
-            }`
-          }
-        )
-      const _scripts = dotProp.has(pkg, "scripts") ? merge(
-        dotProp.get(pkg, "scripts"),
-        `"${this.removeDash(value)}": "npm run test"`
-      ) : {
-          "test": "echo \"Error: no test specified\" && exit 1"
-        }
+        const scriptObj = {}
+        const huskyObj = {}
 
-      const _husky = dotProp.has(pkg, "husky") ? {
-        ...dotProp.get(pkg, "husky.hooks"),
-        ...oneLine`{
-          "${value}": "npm run ${this.removeDash(value)}"
-        }`} : {
-          "hooks": {
-            "pre-commit": "npm run precommit"
-          }
-        }
+        scriptObj[this.removeDash(value)] = 'npm run test'
+        huskyObj[value] = `npm run ${this.removeDash(value)}`
 
-      writePkg(
-        path.join(cwd(), "package.json"),
-        omit(
-          merge(
-            pkg,
-            { "scripts": _scripts },
-            { "husky": _husky }
-          ),
-          "_id"
-        )
-      ).then(pkg => {
-        log(chalk.green("Husky setup completed"))
+        writePkg(
+          path.join(cwd(), 'package.json'),
+          omit(
+            merge(
+              pkg,
+              dotProp.set(pkg, 'scripts', dotProp.has(pkg, 'scripts') ? merge(dotProp.get(pkg, 'scripts'), Object.assign({}, scriptObj)) : merge(Object.assign({
+                'test': 'echo \'Error: no test specified\' && exit 1'
+              }, scriptObj))),
+              dotProp.set(pkg, 'husky.hooks', dotProp.has(pkg, 'husky') ? merge(dotProp.get(pkg, 'husky.hooks'), huskyObj) : huskyObj),
+            ),
+            '_id'
+          )
+        ).then(pkg => {
+          log(chalk.green(`${value} added into husky hooks as well as npm script`))
+        }).catch(error => {
+          log(chalk.red(error))
+        })
       }).catch(error => {
         log(chalk.red(error))
       })
-    }).catch (error => {
+    }
+  }
+
+  remove(value) {
+    if (this.hooks.indexOf(value) < 0) {
+      log(chalk.red('Invalid hook'))
+    } else {
+      readPkg(cwd()).then(pkg => {
+        writePkg(
+          path.join(cwd(), 'package.json'),
+          omit(
+            Object.assign(
+              dotProp.set(
+                pkg,
+                'husky.hooks',
+                omit(
+                  dotProp.get(pkg, 'husky.hooks'),
+                  value
+                )
+              ),
+              dotProp.set(
+                pkg,
+                'scripts',
+                omit(
+                  dotProp.get(pkg, 'scripts'),
+                  this.removeDash(value)
+                )
+              ),
+            ),
+            '_id'
+          )
+        )
+      }).then(pkg => {
+        log(chalk.green(`${value} removed from husky hooks as well as npm script`))
+      }).catch(error => {
+        log(chalk.red(error))
+      })
+    }
+  }
+
+  init() {
+    readPkg(cwd()).then(pkg => {
+      const huskyExists = dotProp.get(pkg, 'husky')
+      if (huskyExists) {
+        log(chalk.green('Husky already exists'))
+      } else {
+        const _scripts = dotProp.has(pkg, 'scripts') ? dotProp.set(
+          merge(
+            dotProp.get(pkg, 'scripts'),
+            { 'precommit': 'npm test' }
+          )
+        ) : {
+            'test': 'echo \'Error: no test specified\' && exit 1',
+            'precommit': 'npm test'
+          }
+
+        writePkg(
+          path.join(cwd(), 'package.json'),
+          omit(Object.assign(
+            pkg,
+            {
+              'scripts': _scripts,
+              'husky': {
+                'hooks': {
+                  'pre-commit': 'npm run precommit'
+                }
+              }
+            }
+          ), '_id')
+        ).then(pkg => {
+          log(chalk.green('Husky setup completed'))
+        }).catch(error => {
+          log(chalk.red(error))
+        })
+      }
+    }).catch(error => {
       log(chalk.red(error))
     })
   }
-}
 
-remove(value) {
-
-}
-
-init() {
-  readPkg(cwd()).then(pkg => {
-    const huskyExists = dotProp.get(pkg, "husky")
-    if (huskyExists) {
-      log(chalk.green("Husky already exists"))
+  setup(input, value) {
+    console.log(input, value)
+    if (this.command.indexOf(input) > -1) {
+      if (input === 'init') {
+        this.init()
+      } else if (input === 'remove') {
+        this.remove(value)
+      } else if (input === 'add') {
+        this.add(value)
+      }
     } else {
-      const _scripts = dotProp.has(pkg, "scripts") ? dotProp.set(
-        merge(
-          dotProp.get(pkg, "scripts"),
-          { "precommit": "npm test" }
-        )
-      ) : {
-          "test": "echo \"Error: no test specified\" && exit 1",
-          "precommit": "npm test"
-        }
-
-      writePkg(
-        path.join(cwd(), "package.json"),
-        omit(Object.assign(
-          pkg,
-          {
-            "scripts": _scripts,
-            "husky": {
-              "hooks": {
-                "pre-commit": "npm run precommit"
-              }
-            }
-          }
-        ), "_id")
-      ).then(pkg => {
-        log(chalk.green("Husky setup completed"))
-      }).catch(error => {
-        log(chalk.red(error))
-      })
+      log(chalk.red('Command not valid'))
     }
-  }).catch(error => {
-    log(chalk.red(error))
-  })
-}
-
-setup(input, value) {
-  if (this.command.indexOf(input) > -1) {
-    if (input === "init") {
-      this.init()
-    } else if (input === "remove") {
-      this.remove(value)
-    } else if (input === "add") {
-      this.add(value)
-    }
-  } else {
-    log(chalk.red("Command not valid"))
   }
-}
 }
 
 module.exports = Object.assign(new HuskyConf(), { HuskyConf })

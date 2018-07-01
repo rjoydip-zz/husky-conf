@@ -35,11 +35,7 @@
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-promise": "^3.8.0",
     "eslint-plugin-standard": "^3.1.0",
-    "husky": "^1.0.0-rc.9",
-    "jest": "^23.1.0"
-  },
-  "jest": {
-    "transform": {}
+    "husky": "^1.0.0-rc.9"
   },
   "dependencies": {
     "chalk": "^2.4.1",

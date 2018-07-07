@@ -1,10 +1,11 @@
 {
   "name": "husky-conf",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Configure husky for your project.",
   "main": "index.js",
   "scripts": {
     "lint": "./node_modules/.bin/eslint **/*.js",
+    "reinstall": "npm uninstall -g husky-conf && npm i -g .",
     "prepush": "npm run lint",
     "precommit": "npm run lint"
   },
@@ -24,7 +25,7 @@
     "git-hooks",
     "hooks"
   ],
-  "author": "Joydip Roy (rjoydip)",
+  "author": "Joydip Roy(rjoydip)",
   "email": "joydipand@gmail.com",
   "license": "MIT",
   "devDependencies": {
@@ -41,6 +42,9 @@
     "dot-prop": "^4.2.0",
     "lodash": "^4.17.10",
     "meow": "^5.0.0",
+    "npm-install-package": "^2.1.0",
+    "ora": "^2.1.0",
+    "pkg-dep": "^1.2.0",
     "read-pkg": "^3.0.0",
     "update-notifier": "^2.5.0",
     "write-pkg": "^3.2.0"

@@ -15,8 +15,7 @@ const log = console.log
 const cwd = process.cwd
 
 class HuskyConf {
-
-  constructor() {
+  constructor () {
     this.alias = ['i', 'a', 'r', 'v']
     this.command = ['init', 'add', 'remove', 'version']
 
@@ -57,31 +56,31 @@ class HuskyConf {
           $ husky-conf add commit-msg
           $ husky-conf remove commit-msg
     `, {
-        string: ['_'],
-        alias: {
-          i: 'init',
-          a: 'add',
-          r: 'remove'
+      string: ['_'],
+      alias: {
+        i: 'init',
+        a: 'add',
+        r: 'remove'
+      },
+      flags: {
+        init: {
+          type: 'array',
+          default: true
         },
-        flags: {
-          init: {
-            type: 'array',
-            default: true
-          },
-          add: {
-            type: 'string',
-            default: false
-          },
-          remove: {
-            type: 'string',
-            default: false
-          },
-          version: {
-            type: 'string',
-            default: false
-          }
+        add: {
+          type: 'string',
+          default: false
+        },
+        remove: {
+          type: 'string',
+          default: false
+        },
+        version: {
+          type: 'string',
+          default: false
         }
-      })
+      }
+    })
 
     if (this.cli.input.length === 0) {
       log(chalk.red('Specify at least one path'))
@@ -94,41 +93,40 @@ class HuskyConf {
     this.updateNotify()
   }
 
-  updateNotify() {
+  updateNotify () {
     updateNotifier({ pkg: this.cli.pkg }).notify()
   }
 
-  removeDash(value) {
+  removeDash (value) {
     return value.replace(/-/g, '')
   }
 
-  checkHuskyExists() {
+  checkHuskyExists () {
     return pkgDep.hasSync('husky')
   }
 
-  async installHusky() {
+  async installHusky () {
     await new Promise((resolve, reject) => {
       const spinner = ora('Please wait').start()
       install('husky@next', function (err) {
         if (err) {
           spinner.fail('Failed to install')
-          reject(err) 
-        }
-        else {
+          reject(err)
+        } else {
           spinner.succeed('Husky successfully installed')
-          resolve(true) 
+          resolve(true)
         }
       })
-    });
+    })
   }
 
-  async version() {
+  async version () {
     await readPkg(__dirname).then(pkg => {
       log(`husky-conf ${chalk.green('v') + chalk.green(dotProp.get(pkg, 'version'))}`)
     })
   }
 
-  add(value) {
+  add (value) {
     if (this.hooks.indexOf(value) < 0) {
       log(chalk.red('Invalid hook'))
     } else {
@@ -162,7 +160,7 @@ class HuskyConf {
     }
   }
 
-  remove(value) {
+  remove (value) {
     if (this.hooks.indexOf(value) < 0) {
       log(chalk.red('Invalid hook'))
     } else {
@@ -199,7 +197,7 @@ class HuskyConf {
     }
   }
 
-  init() {
+  init () {
     readPkg(cwd()).then(pkg => {
       const huskyExists = dotProp.get(pkg, 'husky')
       if (huskyExists) {
@@ -211,9 +209,9 @@ class HuskyConf {
             { 'precommit': 'npm test' }
           )
         ) : {
-            'test': 'echo \'Error: no test specified\' && exit 1',
-            'precommit': 'npm test'
-          }
+          'test': 'echo \'Error: no test specified\' && exit 1',
+          'precommit': 'npm test'
+        }
 
         writePkg(
           path.join(cwd(), 'package.json'),
@@ -239,7 +237,7 @@ class HuskyConf {
     })
   }
 
-  setup(input, value) {
+  setup (input, value) {
     if (this.command.indexOf(input) > -1 || this.alias.indexOf(input) > -1) {
       if (input === 'init' || input === 'i') {
         if (this.checkHuskyExists()) {

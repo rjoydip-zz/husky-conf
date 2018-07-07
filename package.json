@@ -1,6 +1,6 @@
 {
   "name": "husky-conf",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Configure husky for your project.",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,7 @@
     "git-hooks",
     "hooks"
   ],
-  "repository": "husky-conf",
+  "repository": "rjoydip/husky-conf",
   "author": {
     "name": "Joydip Roy",
     "email": "joydipand@gmail.com"

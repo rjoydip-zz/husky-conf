@@ -1,6 +1,6 @@
 {
   "name": "husky-conf",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Configure husky for your project.",
   "main": "index.js",
   "scripts": {
@@ -44,6 +44,7 @@
     "chalk": "^2.4.1",
     "dot-prop": "^4.2.0",
     "lodash": "^4.17.10",
+    "log-symbols": "^2.2.0",
     "meow": "^5.0.0",
     "npm-install-package": "^2.1.0",
     "ora": "^2.1.0",

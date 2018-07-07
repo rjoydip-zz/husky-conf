@@ -10,6 +10,7 @@ const dotProp = require('dot-prop')
 const pkgDep = require('pkg-dep')
 const install = require('npm-install-package')
 const ora = require('ora')
+const logSymbols = require('log-symbols')
 
 const log = console.log
 const cwd = process.cwd
@@ -83,7 +84,7 @@ class HuskyConf {
     })
 
     if (this.cli.input.length === 0) {
-      log(chalk.red('Specify at least one path'))
+      log(logSymbols.error, chalk.red('Specify at least one path'))
       process.exit(1)
     } else {
       const val = pullAt(this.cli.input, [0, 1])
@@ -107,7 +108,7 @@ class HuskyConf {
 
   async installHusky () {
     await new Promise((resolve, reject) => {
-      const spinner = ora('Please wait').start()
+      const spinner = ora('Husky installing ...').start()
       install('husky@next', function (err) {
         if (err) {
           spinner.fail('Failed to install')
@@ -122,13 +123,13 @@ class HuskyConf {
 
   async version () {
     await readPkg(__dirname).then(pkg => {
-      log(`husky-conf ${chalk.green('v') + chalk.green(dotProp.get(pkg, 'version'))}`)
+      log(logSymbols.info, `husky-conf ${chalk.green('v') + chalk.green(dotProp.get(pkg, 'version'))}`)
     })
   }
 
   add (value) {
     if (this.hooks.indexOf(value) < 0) {
-      log(chalk.red('Invalid hook'))
+      log(logSymbols.error, chalk.red('Invalid hook'))
     } else {
       readPkg(cwd()).then(pkg => {
         const scriptObj = {}
@@ -150,19 +151,19 @@ class HuskyConf {
             '_id'
           )
         ).then(pkg => {
-          log(chalk.green(`${value} added into husky hooks as well as npm script`))
+          log(logSymbols.success, chalk.green(`${value} added into husky hooks as well as npm script`))
         }).catch(error => {
-          log(chalk.red(error))
+          log(logSymbols.error, chalk.red(error))
         })
       }).catch(error => {
-        log(chalk.red(error))
+        log(logSymbols.error, chalk.red(error))
       })
     }
   }
 
   remove (value) {
     if (this.hooks.indexOf(value) < 0) {
-      log(chalk.red('Invalid hook'))
+      log(logSymbols.error, chalk.red('Invalid hook'))
     } else {
       readPkg(cwd()).then(pkg => {
         writePkg(
@@ -190,9 +191,9 @@ class HuskyConf {
           )
         )
       }).then(pkg => {
-        log(chalk.green(`${value} removed from husky hooks as well as npm script`))
+        log(logSymbols.success, chalk.green(`${value} removed from husky hooks as well as npm script`))
       }).catch(error => {
-        log(chalk.red(error))
+        log(logSymbols.error, chalk.red(error))
       })
     }
   }
@@ -201,7 +202,7 @@ class HuskyConf {
     readPkg(cwd()).then(pkg => {
       const huskyExists = dotProp.get(pkg, 'husky')
       if (huskyExists) {
-        log((chalk.green('Husky already exists')))
+        log(logSymbols.success, chalk.green('Husky already exists'))
       } else {
         const _scripts = dotProp.has(pkg, 'scripts') ? dotProp.set(
           merge(
@@ -227,13 +228,13 @@ class HuskyConf {
             }
           ), '_id')
         ).then(pkg => {
-          log(chalk.green('Husky setup completed'))
+          log(logSymbols.success, chalk.green('Husky setup completed'))
         }).catch(error => {
-          log(chalk.red(error))
+          log(logSymbols.error, chalk.red(error))
         })
       }
     }).catch(error => {
-      log(chalk.red(error))
+      log(logSymbols.error, chalk.red(error))
     })
   }
 
@@ -245,7 +246,7 @@ class HuskyConf {
         } else {
           this.installHusky().then(() => {
             this.init()
-          }).catch(err => log(chalk.red(err)))
+          }).catch(err => log(logSymbols.error, chalk.red(err)))
         }
       } else if (input === 'remove' || input === 'r') {
         this.remove(value)
@@ -255,13 +256,13 @@ class HuskyConf {
         } else {
           this.installHusky().then(() => {
             this.add(value)
-          }).catch(err => log(chalk.red(err)))
+          }).catch(err => log(logSymbols.error, chalk.red(err)))
         }
       } else if (input === 'version' || input === 'v') {
         this.version()
       }
     } else {
-      log(chalk.red('Command not valid'))
+      log(logSymbols.error, chalk.red('Command not valid'))
     }
   }
 }
